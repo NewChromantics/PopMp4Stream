@@ -13,6 +13,7 @@ body *
 	min-height:	30vh;
 }
 
+
 </style>
 
 </head>
@@ -21,12 +22,14 @@ body *
 <script type=module>
 
 import Mp4Stream from './Mp4Stream.js'
+import {WaitForFrame} from './PopEngine/PopWebApi.js'
 
 function GetCanvas(Name)
 {
 	let Canvas = document.querySelector(`#${Name}`);
 	if ( !Canvas )
 	{
+		console.log(`Creating canvas for track ${Name}`);
 		const NewCanvas = document.createElement('canvas');
 		NewCanvas.id = Name;
 		document.body.appendChild(NewCanvas);
@@ -44,8 +47,13 @@ function RenderFrame(Frame)
 	//	get canvas for track
 	const Name = `Track${Frame.Track}`;
 	const Canvas = GetCanvas(Name);
+	
+	Canvas.width = Frame.Data.visibleRect.width;
+	Canvas.height = Frame.Data.visibleRect.height;
+
 	const Context = Canvas.getContext('2d');
-	Context.drawImage( Frame.Content, 0, 0 );
+	Context.drawImage( Frame.Data, 0, 0 );
+	Frame.Data.Free();
 }
 
 async function StreamFile(Filename)
@@ -53,12 +61,18 @@ async function StreamFile(Filename)
 	const Decoder = new Mp4Stream(Filename);
 	while ( true )
 	{
+		//	wait for browser frame between renders
+		await WaitForFrame();
+		
 		const NextFrame = await Decoder.WaitForNextFrame();
 		RenderFrame(NextFrame);
 	}
 }
 
 StreamFile('./Samples/1655756031325.mp4');
+//StreamFile('./Samples/Acidic.mp4');
+//StreamFile('./Samples/Acidic_fragkeyframe.mp4');
+//StreamFile('./Samples/Acidic_fragkeyframe_fragkeyframe_emptymoov_twotrack.mp4');
 
 
 </script>
