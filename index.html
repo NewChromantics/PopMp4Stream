@@ -4,15 +4,24 @@
 <style>
 body
 {
-	display:	flex;
+	display:		flex;
+	flex-direction:	column;
 }
 
 body *
 {
 	min-width:	30vw;
-	min-height:	30vh;
+	min-height:	10vh;
 }
 
+.Subtitle
+{
+	background:	#333;
+	color:		#eee;
+	font-size:	20pt;
+	height:		1em;
+	flex-grow:	0;
+}
 
 </style>
 
@@ -24,6 +33,26 @@ body *
 import Mp4Stream from './Mp4Stream.js'
 import {WaitForFrame} from './PopEngine/PopWebApi.js'
 
+
+function GetSubtitle(Name)
+{
+	let Div = document.querySelector(`#${Name}`);
+	if ( !Div )
+	{
+		console.log(`Creating Div for track ${Name}`);
+		const NewDiv = document.createElement('div');
+		NewDiv.id = Name;
+		NewDiv.className = 'Subtitle';
+		document.body.appendChild(NewDiv);
+		
+		//	test
+		Div = document.querySelector(`#${Name}`);
+	}
+	if ( !Div )
+		throw `Failed to find/make canvas for ${Name}`;
+	return Div;
+}
+	
 function GetCanvas(Name)
 {
 	let Canvas = document.querySelector(`#${Name}`);
@@ -44,8 +73,16 @@ function GetCanvas(Name)
 
 function RenderFrame(Frame)
 {
-	//	get canvas for track
 	const Name = `Track${Frame.Track}`;
+
+	if ( typeof Frame.Data == typeof '' )
+	{
+		const Div = GetSubtitle(Name);
+		Div.innerText = Frame.Data;
+		return;
+	}
+	
+	//	get canvas for track
 	const Canvas = GetCanvas(Name);
 	
 	Canvas.width = Frame.Data.visibleRect.width;
@@ -69,8 +106,9 @@ async function StreamFile(Filename)
 	}
 }
 
-StreamFile('./Samples/1655756031325.mp4');
+//StreamFile('./Samples/1655756031325.mp4');
 //StreamFile('./Samples/Acidic.mp4');
+StreamFile('./Samples/Acidic_Subtitles.mp4');
 //StreamFile('./Samples/Acidic_fragkeyframe.mp4');
 //StreamFile('./Samples/Acidic_fragkeyframe_fragkeyframe_emptymoov_twotrack.mp4');
 
