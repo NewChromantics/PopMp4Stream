@@ -1,0 +1,67 @@
+<html>
+<head>
+
+<style>
+body
+{
+	display:	flex;
+}
+
+body *
+{
+	min-width:	30vw;
+	min-height:	30vh;
+}
+
+</style>
+
+</head>
+<body>
+
+<script type=module>
+
+import Mp4Stream from './Mp4Stream.js'
+
+function GetCanvas(Name)
+{
+	let Canvas = document.querySelector(`#${Name}`);
+	if ( !Canvas )
+	{
+		const NewCanvas = document.createElement('canvas');
+		NewCanvas.id = Name;
+		document.body.appendChild(NewCanvas);
+		
+		//	test
+		Canvas = document.querySelector(`#${Name}`); 
+	}
+	if ( !Canvas )
+		throw `Failed to find/make canvas for ${Name}`;
+	return Canvas;
+}
+
+function RenderFrame(Frame)
+{
+	//	get canvas for track
+	const Name = `Track${Frame.Track}`;
+	const Canvas = GetCanvas(Name);
+	const Context = Canvas.getContext('2d');
+	Context.drawImage( Frame.Content, 0, 0 );
+}
+
+async function StreamFile(Filename)
+{
+	const Decoder = new Mp4Stream(Filename);
+	while ( true )
+	{
+		const NextFrame = await Decoder.WaitForNextFrame();
+		RenderFrame(NextFrame);
+	}
+}
+
+StreamFile('./Samples/1655756031325.mp4');
+
+
+</script>
+
+</body>
+</html>
